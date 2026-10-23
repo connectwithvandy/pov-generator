@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JumpCloud POV Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      max-width: 540px;
+      width: 100%;
+      padding: 2.5rem 2.5rem 2rem;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .logo-badge {
+      background: #1a56db;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+    }
+
+    .logo-row h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 1.75rem;
+      line-height: 1.5;
+    }
+
+    .error-banner {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #b91c1c;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.35rem;
+    }
+
+    label .optional {
+      font-weight: 400;
+      color: #9ca3af;
+      font-size: 0.75rem;
+    }
+
+    input[type="text"],
+    input[type="url"] {
+      width: 100%;
+      padding: 0.6rem 0.875rem;
+      border: 1.5px solid #d1d5db;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      color: #111827;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="url"]:focus {
+      border-color: #1a56db;
+      box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
+    }
+
+    input::placeholder { color: #9ca3af; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 1.5rem 0 1.25rem;
+    }
+
+    .optional-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #9ca3af;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: #1a56db;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: background 0.15s, opacity 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .submit-btn:hover { background: #1648c0; }
+    .submit-btn:active { background: #1340a8; }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer-note {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-row">
+      <span class="logo-badge">JC</span>
+      <h1>POV Generator</h1>
+    </div>
+    <p class="subtitle">
+      Enter an account name and we'll research the company, then generate a full Point of View
+      document and personalized outreach email.
+    </p>
+
+    {% if error %}
+    <div class="error-banner">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/generate" id="pov-form">
+      <div class="form-group">
+        <label for="account_name">Account Name <span style="color:#ef4444">*</span></label>
+        <input type="text" id="account_name" name="account_name"
+               placeholder="e.g. Atlassian, Canva, SafetyCulture"
+               required autocomplete="off" />
+      </div>
+
+      <div class="form-group">
+        <label for="rep_name">Your Name <span class="optional">(for email sign-off)</span></label>
+        <input type="text" id="rep_name" name="rep_name"
+               placeholder="e.g. Vandana Agarwal" />
+      </div>
+
+      <hr class="divider" />
+      <p class="optional-label">Optional — helps Claude research faster</p>
+
+      <div class="form-group">
+        <label for="linkedin_url">Company LinkedIn URL <span class="optional">(optional)</span></label>
+        <input type="url" id="linkedin_url" name="linkedin_url"
+               placeholder="https://www.linkedin.com/company/..." />
+      </div>
+
+      <div class="form-group">
+        <label for="website">Company Website <span class="optional">(optional)</span></label>
+        <input type="url" id="website" name="website"
+               placeholder="https://example.com" />
+      </div>
+
+      <div class="form-group">
+        <label for="industry_hint">Industry Hint <span class="optional">(optional)</span></label>
+        <input type="text" id="industry_hint" name="industry_hint"
+               placeholder="e.g. FinTech, Healthcare SaaS, EdTech" />
+      </div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">
+        <span class="spinner" id="spinner"></span>
+        <span id="btn-text">Generate POV</span>
+      </button>
+    </form>
+
+    <p class="footer-note">Powered by Claude · JumpCloud APAC Sales</p>
+  </div>
+
+  <script>
+    document.getElementById('pov-form').addEventListener('submit', function() {
+      const btn = document.getElementById('submit-btn');
+      const spinner = document.getElementById('spinner');
+      const text = document.getElementById('btn-text');
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      text.textContent = 'Researching & generating…';
+    });
+  </script>
+</body>
+</html>
